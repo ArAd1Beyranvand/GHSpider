@@ -1,13 +1,11 @@
 package com.arad.ghspider.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.arad.ghspider.model.GitHubUser
 import com.arad.ghspider.model.GitHubRepo
 import com.arad.ghspider.repository.GitHubRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 sealed class GitHubState {

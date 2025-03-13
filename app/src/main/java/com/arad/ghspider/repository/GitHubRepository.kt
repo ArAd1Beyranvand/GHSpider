@@ -3,7 +3,6 @@ package com.arad.ghspider.repository
 import com.arad.ghspider.api.GitHubApiService
 import com.arad.ghspider.model.GitHubUser
 import com.arad.ghspider.model.GitHubRepo
-import retrofit2.Response
 
 class GitHubRepository(private val apiService: GitHubApiService) {
     val userCache = mutableMapOf<String, GitHubUser>()
