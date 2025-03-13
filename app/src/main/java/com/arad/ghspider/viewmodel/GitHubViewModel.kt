@@ -11,12 +11,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 sealed class GitHubState {
-    object Loading : GitHubState()
+    data object Loading : GitHubState()
     data class Success(val user: GitHubUser, val repos: List<GitHubRepo>) : GitHubState()
     data class Error(val message: String) : GitHubState()
 }
 
-class GitHubViewModel(private val repository: GitHubRepository) : ViewModel() {
+class GitHubViewModel(val repository: GitHubRepository) : ViewModel() {
     private val _state = MutableStateFlow<GitHubState>(GitHubState.Loading)
     val state: StateFlow<GitHubState> = _state
 
@@ -42,9 +42,5 @@ class GitHubViewModel(private val repository: GitHubRepository) : ViewModel() {
                 _state.value = GitHubState.Error(e.message ?: "Unknown error occurred")
             }
         }
-    }
-
-    fun clearCache() {
-        repository.clearCache()
     }
 } 

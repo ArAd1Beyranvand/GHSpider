@@ -6,11 +6,10 @@ import com.arad.ghspider.model.GitHubRepo
 import retrofit2.Response
 
 class GitHubRepository(private val apiService: GitHubApiService) {
-    private val userCache = mutableMapOf<String, GitHubUser>()
-    private val repoCache = mutableMapOf<String, List<GitHubRepo>>()
+    val userCache = mutableMapOf<String, GitHubUser>()
+    val repoCache = mutableMapOf<String, List<GitHubRepo>>()
 
     suspend fun getUser(username: String, token: String? = null): Result<GitHubUser> {
-        println("debug getting user")
         // Check cache first
         userCache[username]?.let {
             return Result.success(it)
@@ -31,7 +30,10 @@ class GitHubRepository(private val apiService: GitHubApiService) {
         }
     }
 
-    suspend fun getUserRepositories(username: String, token: String? = null): Result<List<GitHubRepo>> {
+    suspend fun getUserRepositories(
+        username: String,
+        token: String? = null
+    ): Result<List<GitHubRepo>> {
         // Check cache first
         repoCache[username]?.let {
             return Result.success(it)
@@ -50,10 +52,5 @@ class GitHubRepository(private val apiService: GitHubApiService) {
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-
-    fun clearCache() {
-        userCache.clear()
-        repoCache.clear()
     }
 } 
