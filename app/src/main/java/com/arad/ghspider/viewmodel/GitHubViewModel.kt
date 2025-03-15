@@ -14,7 +14,7 @@ sealed class GitHubState {
     data class Error(val message: String) : GitHubState()
 }
 
-class GitHubViewModel(val repository: GitHubRepository) : ViewModel() {
+class GitHubViewModel(private val repository: GitHubRepository) : ViewModel() {
     private val _state = MutableStateFlow<GitHubState>(GitHubState.Loading)
     val state: StateFlow<GitHubState> = _state
 

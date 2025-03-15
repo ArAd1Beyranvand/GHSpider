@@ -11,15 +11,15 @@ object FileCacheManager {
     private val usersFile = File("users.json")
     private val reposFile = File("repos.json")
 
-    private fun ensureFileExists(file: File, defaultContent: String) {
+    private fun ensureFileExists(file: File) {
         if (!file.exists()) {
             file.createNewFile()
-            file.writeText(defaultContent)
+            file.writeText("{}")
         }
     }
 
     fun loadUsers(): MutableMap<String, GitHubUser> {
-        ensureFileExists(usersFile, "{}") // Ensure file exists with an empty JSON object
+        ensureFileExists(usersFile) // Ensure file exists with an empty JSON object
         return if (usersFile.readText().isNotEmpty()) {
             gson.fromJson(usersFile.readText(), object : TypeToken<MutableMap<String, GitHubUser>>() {}.type)
         } else mutableMapOf()
@@ -30,7 +30,7 @@ object FileCacheManager {
     }
 
     fun loadRepos(): MutableMap<String, List<GitHubRepo>> {
-        ensureFileExists(reposFile, "{}")
+        ensureFileExists(reposFile)
         return if (reposFile.readText().isNotEmpty()) {
             gson.fromJson(reposFile.readText(), object : TypeToken<MutableMap<String, List<GitHubRepo>>>() {}.type)
         } else mutableMapOf()
