@@ -1,4 +1,5 @@
 package com.arad.ghspider
+
 import kotlinx.coroutines.flow.first
 import com.arad.ghspider.api.GitHubApiService
 import com.arad.ghspider.cache.FileCacheManager
@@ -7,6 +8,7 @@ import com.arad.ghspider.viewmodel.GitHubViewModel
 import com.arad.ghspider.viewmodel.GitHubState
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
+import kotlin.system.exitProcess
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -69,19 +71,31 @@ class GHSpiderApp {
                 "2" -> searchCachedUsers()
                 "3" -> searchCachedRepositories()
                 "4" -> showAllCachedData()
-                "5" -> {
-                    println("Exiting application. Thank you for using GHSpider!")
-                    return
-                }
+                "5" -> exitApplication()
 
                 else -> println("Invalid option. Please try again.")
             }
         }
     }
 
+    private fun exitApplication() {
+        println("\nDo you want to delete the persistent cache files before exiting? (Y/n):")
+        val answer = readLine()?.trim()?.lowercase() ?: "y"
+
+        if (answer == "y" || answer == "yes" || answer.isEmpty()) {
+            FileCacheManager.deleteCacheFiles()
+            println("Cache files deleted.")
+        } else {
+            println("Cache files retained.")
+        }
+
+        println("Thank you for using GHSpider!")
+        exitProcess(0)
+    }
+
     private fun fetchUserData() {
         println("\nEnter a GitHub username:")
-        val username = readLine()?.trim() ?: return
+        val username = readlnOrNull()?.trim() ?: return
         if (username.isNotEmpty()) {
             fetchAndDisplayUserInfo(username)
         } else {
@@ -90,14 +104,15 @@ class GHSpiderApp {
     }
 
     private fun searchCachedUsers() {
-        println("\nEnter a username to search in cache:")
-        val username = readLine()?.trim() ?: return
+        println("\nEnter a username to search in cache (from file):")
+        val username = readlnOrNull()?.trim() ?: return
         if (username.isNotEmpty()) {
-            val user = viewModel.repository.userCache[username]
+            val fileUsers = FileCacheManager.loadUsers()
+            val user = fileUsers[username.lowercase()]
             if (user != null) {
-                println("User found in cache: $user")
+                println("User found in file cache: $user")
             } else {
-                println("User not found in cache.")
+                println("User not found in file cache.")
             }
         } else {
             println("Username cannot be empty.")
@@ -105,16 +120,17 @@ class GHSpiderApp {
     }
 
     private fun searchCachedRepositories() {
-        println("\nEnter a repository name to search in cache:")
-        val repoName = readLine()?.trim() ?: return
+        println("\nEnter a repository name to search in cache (from file):")
+        val repoName = readlnOrNull()?.trim() ?: return
         if (repoName.isNotEmpty()) {
-            val repos = viewModel.repository.repoCache.values.flatten()
+            val fileRepos = FileCacheManager.loadRepos()
+            val repos = fileRepos.values.flatten()
                 .filter { it.name.contains(repoName, ignoreCase = true) }
             if (repos.isNotEmpty()) {
-                println("Repositories found in cache:")
+                println("Repositories found in file cache:")
                 repos.forEach { println(it) }
             } else {
-                println("No repositories found in cache with that name.")
+                println("No repositories found in file cache with that name.")
             }
         } else {
             println("Repository name cannot be empty.")
@@ -122,28 +138,22 @@ class GHSpiderApp {
     }
 
     private fun showAllCachedData() {
-        println("\nCached Users:")
-        viewModel.repository.userCache.values.forEach { println(it) }
+        println("\nCached Users (from file):")
+        val fileUsers = FileCacheManager.loadUsers()
+        fileUsers.values.forEach { println(it) }
 
-        println("\nCached Repositories:")
-        viewModel.repository.repoCache.values.flatten().forEach { println(it) }
+        println("\nCached Repositories (from file):")
+        val fileRepos = FileCacheManager.loadRepos()
+        fileRepos.values.flatten().forEach { println(it) }
     }
 
     private fun fetchAndDisplayUserInfo(username: String): Unit = runBlocking {
         println("\nFetching information for user: $username")
-
-
         viewModel.fetchUserData(username)
         val state = viewModel.state.first { it !is GitHubState.Loading }
         when (state) {
-            is GitHubState.Success -> {
-                displayUserInfo(state)
-            }
-
-            is GitHubState.Error -> {
-                println("Error: ${state.message}")
-            }
-
+            is GitHubState.Success -> displayUserInfo(state)
+            is GitHubState.Error -> println("Error: ${state.message}")
             else -> {}
         }
     }
@@ -176,4 +186,4 @@ class GHSpiderApp {
                 println("URL: ${repo.url}")
             }
     }
-} 
+}
