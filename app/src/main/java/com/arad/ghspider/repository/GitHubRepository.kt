@@ -1,6 +1,7 @@
 package com.arad.ghspider.repository
 
 import com.arad.ghspider.api.GitHubApiService
+import com.arad.ghspider.cache.FileCacheManager
 import com.arad.ghspider.model.GitHubUser
 import com.arad.ghspider.model.GitHubRepo
 

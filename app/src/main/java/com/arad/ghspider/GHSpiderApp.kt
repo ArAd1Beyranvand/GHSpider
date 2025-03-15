@@ -1,6 +1,7 @@
 package com.arad.ghspider
 import kotlinx.coroutines.flow.first
 import com.arad.ghspider.api.GitHubApiService
+import com.arad.ghspider.cache.FileCacheManager
 import com.arad.ghspider.repository.GitHubRepository
 import com.arad.ghspider.viewmodel.GitHubViewModel
 import com.arad.ghspider.viewmodel.GitHubState
@@ -42,6 +43,11 @@ class GHSpiderApp {
 
         val apiService = retrofit.create(GitHubApiService::class.java)
         val repository = GitHubRepository(apiService)
+
+        // Initially load persisted cache data (used when fetching new data)
+        repository.userCache.putAll(FileCacheManager.loadUsers())
+        repository.repoCache.putAll(FileCacheManager.loadRepos())
+
         viewModel = GitHubViewModel(repository)
     }
 
@@ -52,15 +58,14 @@ class GHSpiderApp {
         while (true) {
             println("\nMenu:")
             println("1️⃣ Fetch and display GitHub user data by username")
-            println("2️⃣ Search cached users by username")
-            println("3️⃣ Search cached repositories by repository name")
-            println("4️⃣ Show all cached data")
+            println("2️⃣ Search cached users by username (read from file)")
+            println("3️⃣ Search cached repositories by repository name (read from file)")
+            println("4️⃣ Show all cached data (read from file)")
             println("5️⃣ Exit application")
             print("\nSelect an option: ")
 
-            when (readLine()?.trim()) {
-                "1" ->
-                    fetchUserData()
+            when (readlnOrNull()?.trim()) {
+                "1" -> fetchUserData()
                 "2" -> searchCachedUsers()
                 "3" -> searchCachedRepositories()
                 "4" -> showAllCachedData()
